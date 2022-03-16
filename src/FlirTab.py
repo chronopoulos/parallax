@@ -230,13 +230,15 @@ class FlirTab(QWidget):
 
     def handleLscreenClicked(self, xclicked, yclicked):
 
-        self.lCorrPoint = np.array([[xclicked], [yclicked], [1]])
+        self.lCorrPoint = np.array([[xclicked], [yclicked]])
+        print('lCorrPoint = ', self.lCorrPoint)
         self.lCorrDone = True
         self.enableTriangulationMaybe()
 
     def handleRscreenClicked(self, xclicked, yclicked):
 
-        self.rCorrPoint = np.array([[xclicked], [yclicked], [1]])
+        self.rCorrPoint = np.array([[xclicked], [yclicked]])
+        print('rCorrPoint = ', self.rCorrPoint)
         self.rCorrDone = True
         self.enableTriangulationMaybe()
 
@@ -248,8 +250,6 @@ class FlirTab(QWidget):
 
     def triangulate(self):
 
-        print('lCorrPoint = ', self.lCorrPoint)
-        print('rCorrPoint = ', self.rCorrPoint)
         result_homogeneous = cv.triangulatePoints(self.lproj, self.rproj, self.lCorrPoint, self.rCorrPoint)
         print('result_homogeneous = ', result_homogeneous)
 
