@@ -142,7 +142,8 @@ class FlirTab(QWidget):
 
         self.triangulateButton = QPushButton('Triangulate')
         self.triangulateButton.setEnabled(False)
-        self.triangulateButton.clicked.connect(self.triangulate)
+        #self.triangulateButton.clicked.connect(self.triangulate)
+        self.triangulateButton.clicked.connect(self.triangulate2)
 
         self.saveButton = QPushButton('Save Last Frame')
         self.saveButton.setEnabled(False)
@@ -254,9 +255,15 @@ class FlirTab(QWidget):
         print('result_homogeneous = ', result_homogeneous)
 
         #result_euclidean = cv.convertPointsFromHomogeneous(np.array(result_homogeneous))
-        # ok i'll do it myself
+        # nvm i'll do it myself
         xe = result_homogeneous[0] / result_homogeneous[3]
         ye = result_homogeneous[1] / result_homogeneous[3]
         ze = result_homogeneous[2] / result_homogeneous[3]
         print('result_euclidean = ', xe, ye, ze)
+
+    def triangulate2(self):
+        lpoint = [self.lCorrPoint[0], self.lCorrPoint[1]]
+        rpoint = [self.rCorrPoint[0], self.rCorrPoint[1]]
+        res = DLT(self.lproj, self.rproj, lpoint, rpoint)
+        print('triangulated point = ', res)
 

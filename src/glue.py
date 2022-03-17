@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+from scipy import linalg
 
 WIDTH_SENSOR = 4072
 HEIGHT_SENSOR = 3046
@@ -18,6 +19,25 @@ OBJP[:,:2] = np.mgrid[:NCW,:NCH].T.reshape(-1,2)
 
 NUM_CAL_IMG = 5 # currently see no change in err with increased number
 
+def DLT(P1, P2, point1, point2):
+
+    """
+    https://temugeb.github.io/opencv/python/2021/02/02/stereo-camera-calibration-and-triangulation.html
+    """
+ 
+    A = [point1[1]*P1[2,:] - P1[1,:],
+         P1[0,:] - point1[0]*P1[2,:],
+         point2[1]*P2[2,:] - P2[1,:],
+         P2[0,:] - point2[0]*P2[2,:]
+        ]
+    A = np.array(A).reshape((4,4))
+ 
+    B = A.transpose() @ A
+    U, s, Vh = linalg.svd(B, full_matrices = False)
+ 
+    return Vh[3,0:3]/Vh[3,3]
+
+
 def getProjectionMatrix(cornerss):
 
     """
@@ -31,7 +51,7 @@ def getProjectionMatrix(cornerss):
     imgpoints = cornerss
     err, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, (WCV,HCV), None, None)
     print('err = ', err)
-    print('tvecs = ', tvecs)
+    print('dist = ', dist)
 
     """
     # average (and flatten) the rotation vectors
