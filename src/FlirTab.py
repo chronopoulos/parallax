@@ -128,6 +128,14 @@ class FlirTab(QWidget):
         self.initializeButton = QPushButton('Initialize Cameras')
         self.initializeButton.clicked.connect(self.initCameras)
 
+        self.edgeButton = QPushButton('Detect Edges')
+        self.edgeButton.setEnabled(True)
+        self.edgeButton.clicked.connect(self.detectEdges)
+
+        self.lineButton = QPushButton('Detect Lines')
+        self.lineButton.setEnabled(True)
+        self.lineButton.clicked.connect(self.detectLines)
+
         self.captureButton = QPushButton('Capture Frames')
         self.captureButton.setEnabled(False)
         self.captureButton.clicked.connect(self.capture)
@@ -142,7 +150,6 @@ class FlirTab(QWidget):
 
         self.triangulateButton = QPushButton('Triangulate')
         self.triangulateButton.setEnabled(False)
-        #self.triangulateButton.clicked.connect(self.triangulate)
         self.triangulateButton.clicked.connect(self.triangulate2)
 
         self.saveButton = QPushButton('Save Last Frame')
@@ -152,6 +159,8 @@ class FlirTab(QWidget):
         mainLayout.addWidget(self.initializeButton)
         mainLayout.addWidget(self.screens)
         mainLayout.addWidget(self.captureButton)
+        mainLayout.addWidget(self.edgeButton)
+        mainLayout.addWidget(self.lineButton)
         mainLayout.addWidget(self.checkerboardButton)
         mainLayout.addWidget(self.projectionButton)
         mainLayout.addWidget(self.triangulateButton)
@@ -266,4 +275,29 @@ class FlirTab(QWidget):
         rpoint = [self.rCorrPoint[0], self.rCorrPoint[1]]
         res = DLT(self.lproj, self.rproj, lpoint, rpoint)
         print('triangulated point = ', res)
+
+    def detectEdges(self):
+        self.ldata = cv.pyrDown(self.lcamera.getLastImageData()) # half-res
+        self.ledges = cv.Canny(self.ldata, 50, 50)
+        self.lscreen.setData(self.ledges)
+
+        self.rdata = cv.pyrDown(self.rcamera.getLastImageData()) # half-res
+        self.redges = cv.Canny(self.rdata, 50, 50)
+        self.rscreen.setData(self.redges)
+
+    def detectLines(self):
+        self.llines = cv.HoughLinesP(self.ledges, 1, np.pi/180, 50, None, 50, 10)
+        self.ldata = cv.pyrDown(self.lcamera.getLastImageData()) # half-res
+        for line in self.llines[:,0]:
+            cv.line(self.ldata, (line[0], line[1]), (line[2], line[3]), (0,0,255), 3, cv.LINE_AA)
+        self.lscreen.setData(self.ldata)
+        
+        self.rlines = cv.HoughLinesP(self.redges, 1, np.pi/180, 50, None, 50, 10)
+        self.rdata = cv.pyrDown(self.rcamera.getLastImageData()) # half-res
+        for line in self.rlines[:,0]:
+            cv.line(self.rdata, (line[0], line[1]), (line[2], line[3]), (0,0,255), 3, cv.LINE_AA)
+        self.rscreen.setData(self.rdata)
+
+        
+
 
