@@ -4,6 +4,9 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt
 
 import os
 import numpy as np
+import time
+import cv2
+import pickle
 
 from Calibration import Calibration
 from lib import *
@@ -25,6 +28,7 @@ class TriangulationPanel(QFrame):
         self.mainLabel.setFont(FONT_BOLD)
         self.calButton = QPushButton('Run Calibration Routine')
         self.goButton = QPushButton('Triangulate Points')
+        self.detectButton = QPushButton('Detect Probe')
 
         self.statusLabel = QLabel()
         self.statusLabel.setAlignment(Qt.AlignCenter)
@@ -35,15 +39,57 @@ class TriangulationPanel(QFrame):
         mainLayout.addWidget(self.calButton)
         mainLayout.addWidget(self.statusLabel)
         mainLayout.addWidget(self.goButton)
+        mainLayout.addWidget(self.detectButton)
         self.setLayout(mainLayout)
 
         # connections
         self.calButton.clicked.connect(self.launchCalibrationDialog)
         self.goButton.clicked.connect(self.triangulate)
+        self.detectButton.clicked.connect(self.detectProbe)
 
         # frame border
         self.setFrameStyle(QFrame.Box | QFrame.Plain);
         self.setLineWidth(2);
+
+
+    def detectProbe(self):
+
+        # grab stage and cameras
+        stages = list(self.model.stages.values())
+        stage = stages[0]
+        cameras = list(self.model.cameras.values())
+        lcamera = cameras[0]
+        rcamera = cameras[1]
+
+        # capture before
+        lcamera.capture()
+        rcamera.capture()
+        lbefore = lcamera.getLastImageData()
+        rbefore = rcamera.getLastImageData()
+
+        # retract slightly
+        x,y,z = stage.getPosition_abs()
+        stage.moveToTarget3d_abs(x, y, z+100)
+
+        # capture after
+        lcamera.capture()
+        rcamera.capture()
+        lafter = lcamera.getLastImageData()
+        rafter = rcamera.getLastImageData()
+
+        # un-retract
+        stage.moveToTarget3d_abs(x, y, z)
+
+        # TODO diff the images and save them
+        ldiff = lafter - lbefore
+        cv2.imwrite('ldiff.png', ldiff)
+        rdiff = rafter - rbefore
+        cv2.imwrite('rdiff.png', rdiff)
+
+        # for now just save them
+        data = (lbefore, rbefore, lafter, rafter)
+        with open('diffs.pkl', 'wb') as f:
+            pickle.dump(data, f)
 
     def triangulate(self):
 
