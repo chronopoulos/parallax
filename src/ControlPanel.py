@@ -55,7 +55,7 @@ def handleStageError(func):
         try:
             return func(*args)
         except StageError:
-            self.msgPosted.emit('Stage communication error: %s' % self.stage.getIP())
+            print('stage communication error')
     return inner
 
 class ControlPanel(QFrame):

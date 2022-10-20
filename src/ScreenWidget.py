@@ -46,6 +46,11 @@ class ScreenWidget(QLabel):
 
         self.camera = None
 
+        self.isDiff = False
+
+    def toggleDiff(self):
+        self.isDiff = not self.isDiff
+
     def zoomIn(self):
         self.zoom = True
 
@@ -55,7 +60,10 @@ class ScreenWidget(QLabel):
     def refresh(self):
         if self.camera:
             self.camera.capture()
-            self.setData(self.camera.getLastImageData())
+            if self.isDiff:
+                self.setData(self.camera.getLastDiffData())
+            else:
+                self.setData(self.camera.getLastImageData())
 
     def clearSelected(self):
         self.xsel = False

@@ -4,6 +4,7 @@ import PySpin
 
 import numpy as np
 import time, datetime
+import cv2
 
 
 class Camera():
@@ -40,6 +41,7 @@ class Camera():
         self.beginAcquisition()
 
         self.lastImage = None
+        self.lastLastImage = None
 
     def name(self):
         sn = self.camera.DeviceSerialNumber()
@@ -73,6 +75,7 @@ class Camera():
         while image.IsIncomplete():
             print('waiting')
 
+        self.lastLastImage = self.lastImage
         self.lastImage = image
 
     def getLastCaptureTime(self):
@@ -88,6 +91,12 @@ class Camera():
     def getLastImageData(self):
         # returns a shape=(3000,4000), type=uint8 grayscale image
         return self.lastImage.GetNDArray()
+
+    def getLastDiffData(self):
+        lastData = self.lastImage.GetNDArray()
+        lastLastData = self.lastLastImage.GetNDArray()
+        diff = cv2.absdiff(lastData, lastLastData)
+        return diff
 
     def clean(self):
         self.camera.EndAcquisition()

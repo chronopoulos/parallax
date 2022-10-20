@@ -63,6 +63,9 @@ class MainWindow(QMainWindow):
         self.helpMenu = self.menuBar().addMenu("Help")
         self.helpMenu.addAction(self.aboutAction)
 
+        self.setWindowTitle('Parallax')
+        self.setWindowIcon(QIcon('../img/sextant.png'))
+
     def launchStageManager(self):
         self.stageManager = StageManager(self.model)
         self.stageManager.show()
@@ -124,9 +127,6 @@ class MainWidget(QWidget):
         mainLayout.addWidget(self.msgLog)
         self.setLayout(mainLayout)
 
-        self.setWindowTitle('MISGUIde')
-        self.setWindowIcon(QIcon('../img/sextant.png'))
-
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_R:
             if (e.modifiers() & Qt.ControlModifier):
@@ -137,6 +137,10 @@ class MainWidget(QWidget):
             self.model.registerCorrPoints_cal()
         elif e.key() == Qt.Key_Escape:
             self.model.haltAllStages()
+        elif e.key() == Qt.Key_D:
+            print('toggle diff')
+            self.lscreen.toggleDiff()
+            self.rscreen.toggleDiff()
 
     def refresh(self):
         self.lscreen.refresh()
