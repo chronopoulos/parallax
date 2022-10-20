@@ -27,7 +27,7 @@ def sanitizeInt32(value):
         value -= 2**32
     return value
 
-class Stage():
+class PoeStage():
 
     def __init__(self, sock):
         self.sock = sock
@@ -45,6 +45,9 @@ class Stage():
 
     def getIP(self):
         return self.sock.getpeername()[0]
+
+    def getName(self):
+        return self.getIP()
 
     #################################
 

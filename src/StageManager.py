@@ -7,7 +7,8 @@ from PyQt5.QtGui import QDoubleValidator, QIcon
 
 import socket
 
-from Stage import Stage
+from PoeStage import PoeStage
+from UsbStage import UsbStage
 from lib import *
 from Helper import *
 
@@ -82,6 +83,8 @@ class StageManager(QWidget):
         self.subnetWidget = SubnetWidget()
         self.scanButton = QPushButton('Scan')
         self.scanButton.clicked.connect(self.scan)
+        self.scanUsbButton = QPushButton('Scan USB')
+        self.scanUsbButton.clicked.connect(self.scanUSB)
         self.listWidget = QListWidget()
         self.pbar = QProgressBar()
         self.pbar.setMinimum(0)
@@ -97,6 +100,7 @@ class StageManager(QWidget):
         layout.addWidget(self.listWidget)
         layout.addWidget(self.midWidget)
         layout.addWidget(self.pbar)
+        layout.addWidget(self.scanUsbButton)
         self.setLayout(layout)
         self.setWindowTitle('Scan for Stages')
 
@@ -105,6 +109,9 @@ class StageManager(QWidget):
     def scan(self):
         self.scanForStages(self.subnetWidget.getSubnet())
 
+    def scanUSB(self):
+        pass #TODO
+
     def updateList(self):
         self.listWidget.clear()
         stages = list(self.model.stages.values())
@@ -112,7 +119,7 @@ class StageManager(QWidget):
             self.listWidget.addItem("(no stages available)")
         else:
             for stage in stages:
-                self.listWidget.addItem(stage.getIP())
+                self.listWidget.addItem(stage.getName())
 
     def getParams(self):
         x = float(self.xedit.text())
@@ -147,6 +154,10 @@ if __name__ == '__main__':
     from PyQt5.QtWidgets import QApplication
     from Model import Model
     model = Model()
+    s0 = UsbStage('/dev/ttyUSB0')
+    model.addStage(s0)
+    s1 = UsbStage('/dev/ttyUSB1')
+    model.addStage(s1)
     app = QApplication([])
     stageManager = StageManager(model)
     stageManager.show()
