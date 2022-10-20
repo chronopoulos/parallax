@@ -8,6 +8,7 @@
 * python3-scipy
 * python3-opencv
 * spinnaker-python
+* python-newscale@e42b821
 
 ### Installation via `conda`
 
