@@ -63,6 +63,9 @@ class MainWindow(QMainWindow):
         self.helpMenu = self.menuBar().addMenu("Help")
         self.helpMenu.addAction(self.aboutAction)
 
+        self.setWindowTitle('Parallax')
+        self.setWindowIcon(QIcon('../img/sextant.png'))
+
     def launchStageManager(self):
         self.stageManager = StageManager(self.model)
         self.stageManager.show()
@@ -74,6 +77,7 @@ class MainWindow(QMainWindow):
     def launchRBT(self):
         self.rbt = RigidBodyTransformTool(self.model)
         self.rbt.show()
+
 
 class MainWidget(QWidget):
 
@@ -123,9 +127,6 @@ class MainWidget(QWidget):
         mainLayout.addWidget(self.controls)
         mainLayout.addWidget(self.msgLog)
         self.setLayout(mainLayout)
-
-        self.setWindowTitle('Parallax')
-        self.setWindowIcon(QIcon('../img/sextant.png'))
 
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_R:
