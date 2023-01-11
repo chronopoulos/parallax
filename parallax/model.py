@@ -2,6 +2,7 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 import numpy as np
 import pickle
+import yaml
 import serial.tools.list_ports
 from mis_focus_controller import FocusController
 
@@ -140,3 +141,9 @@ class Model(QObject):
         for stage in self.stages.values():
             stage.halt()
         self.msg_posted.emit('Halting all stages.')
+
+    def load_config(self, cfg_file):
+        import os
+        print(os.getcwd())
+        cfg = yaml.load(open(cfg_file, 'r'))        
+        print(cfg)

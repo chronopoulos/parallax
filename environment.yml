@@ -11,6 +11,7 @@ dependencies:
   - pip
   - scipy
   - pip:
+    - pyyaml
     - pyqtgraph
     - opencv-python-headless
     - spinnaker-python
