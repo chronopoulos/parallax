@@ -37,10 +37,10 @@ class ScreenWidget(pg.GraphicsView):
         self.view_box.addItem(self.click_target)
         self.click_target.setVisible(False)
 
-        self.textOverlay = pg.QtWidgets.QGraphicsTextItem('<coords>')
+        self.textOverlay = pg.TextItem('<coords>')
         self.textOverlay.setParentItem(self.image_item)
         self.textOverlay.setPos(20, 20)
-        self.textOverlay.setDefaultTextColor(QColor(255,0,0))
+        self.textOverlay.setColor(QColor(255,0,0))
 
         self.camera_actions = []
         self.focochan_actions = []
