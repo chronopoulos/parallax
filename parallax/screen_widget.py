@@ -9,6 +9,7 @@ import importlib
 
 from . import filters
 from . import detectors
+from . import overlays
 
 
 class ScreenWidget(pg.GraphicsView):
@@ -39,6 +40,7 @@ class ScreenWidget(pg.GraphicsView):
         self.focochan_actions = []
         self.filter_actions = []
         self.detector_actions = []
+        self.overlay_actions = []
 
         # still needed?
         self.camera_action_separator = self.view_box.menu.insertSeparator(self.view_box.menu.actions()[0])
@@ -49,6 +51,7 @@ class ScreenWidget(pg.GraphicsView):
         self.focochan = None
         self.filter = filters.NoFilter()
         self.detector = detectors.NoDetector()
+        self.overlay = overlays.NoOverlay(self.model)
 
         # sub-menus
         self.parallax_menu = QMenu("Parallax", self.view_box.menu)
@@ -56,10 +59,12 @@ class ScreenWidget(pg.GraphicsView):
         self.focochan_menu = self.parallax_menu.addMenu("Focus Controllers")
         self.filter_menu = self.parallax_menu.addMenu("Filters")
         self.detector_menu = self.parallax_menu.addMenu("Detectors")
+        self.overlay_menu = self.parallax_menu.addMenu("Overlays")
         self.view_box.menu.insertMenu(self.view_box.menu.actions()[0], self.parallax_menu)
 
         self.update_filter_menu()
         self.update_detector_menu()
+        self.update_overlay_menu()
 
         if self.filename:
             self.set_data(cv2.imread(filename, cv2.IMREAD_GRAYSCALE))
@@ -78,6 +83,7 @@ class ScreenWidget(pg.GraphicsView):
         pos = self.detector.process(data)
         if pos is not None:
             self.select(pos)
+        data = self.overlay.process(data)
         self.image_item.setImage(data, autoLevels=False)
 
     def update_camera_menu(self):
@@ -120,6 +126,16 @@ class ScreenWidget(pg.GraphicsView):
                 act.triggered.connect(act.callback)
                 self.detector_actions.append(act)
 
+    def update_overlay_menu(self):
+        for act in self.overlay_actions:
+            self.overlay_menu.removeAction(act)
+        for name, obj in inspect.getmembers(overlays):
+            if inspect.isclass(obj) and (obj.__module__ == 'parallax.overlays'):
+                act = self.overlay_menu.addAction(obj.name)
+                act.callback = functools.partial(self.set_overlay, obj)
+                act.triggered.connect(act.callback)
+                self.overlay_actions.append(act)
+
     def image_clicked(self, event):
         if event.button() == QtCore.Qt.MouseButton.LeftButton:            
             self.select(event.pos())
@@ -148,6 +164,10 @@ class ScreenWidget(pg.GraphicsView):
     def set_detector(self, detector):
         self.detector = detector()
         self.detector.launch_control_panel()
+
+    def set_overlay(self, overlay):
+        self.overlay = overlay(self.model)
+        self.overlay.launch_control_panel()
 
     def get_selected(self):
         if self.click_target.isVisible():
