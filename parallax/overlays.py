@@ -18,7 +18,7 @@ class NoOverlay:
         pass
 
     def process(self, frame):
-        return frame
+        return -1,-1,-1
 
     def launch_control_panel(self):
         pass
@@ -42,10 +42,9 @@ class CoordinateOverlay:
     def process(self, frame):
         if self.stage is not None:
             pos = self.stage.get_position()
-            print('position = ', pos)
-            return frame    # TODO: overlay position coords
+            return pos
         else:
-            return frame
+            return -1,-1,-1
 
     def launch_control_panel(self):
         self.control_panel = QWidget()
@@ -70,8 +69,7 @@ class BogusCoordinateOverlay:
         y = random.uniform(0,15000)
         z = random.uniform(0,15000)
         pos = x,y,z
-        print('position = ', pos)
-        return frame    # TODO: overlay position coords
+        return pos
 
     def launch_control_panel(self):
         pass

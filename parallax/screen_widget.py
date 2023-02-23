@@ -1,8 +1,9 @@
-import functools
-import cv2
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QAction, QSlider, QMenu
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5 import QtCore
+from PyQt5.QtGui import QColor
+
+import functools
+import cv2
 import pyqtgraph as pg
 import inspect
 import importlib
@@ -35,6 +36,11 @@ class ScreenWidget(pg.GraphicsView):
         self.click_target = pg.TargetItem()
         self.view_box.addItem(self.click_target)
         self.click_target.setVisible(False)
+
+        self.textOverlay = pg.QtWidgets.QGraphicsTextItem('<coords>')
+        self.textOverlay.setParentItem(self.image_item)
+        self.textOverlay.setPos(20, 20)
+        self.textOverlay.setDefaultTextColor(QColor(255,0,0))
 
         self.camera_actions = []
         self.focochan_actions = []
@@ -83,7 +89,9 @@ class ScreenWidget(pg.GraphicsView):
         pos = self.detector.process(data)
         if pos is not None:
             self.select(pos)
-        data = self.overlay.process(data)
+        x,y,z = self.overlay.process(data)
+        s = '[{0:.1f}, {1:.1f}, {2:.1f}]'.format(x, y, z)
+        self.textOverlay.setPlainText(s)
         self.image_item.setImage(data, autoLevels=False)
 
     def update_camera_menu(self):
@@ -137,9 +145,9 @@ class ScreenWidget(pg.GraphicsView):
                 self.overlay_actions.append(act)
 
     def image_clicked(self, event):
-        if event.button() == QtCore.Qt.MouseButton.LeftButton:            
+        if event.button() == Qt.MouseButton.LeftButton:            
             self.select(event.pos())
-        elif event.button() == QtCore.Qt.MouseButton.MiddleButton:            
+        elif event.button() == Qt.MouseButton.MiddleButton:            
             self.zoom_out()
 
     def select(self, pos):
