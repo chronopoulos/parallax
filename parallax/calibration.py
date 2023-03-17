@@ -72,7 +72,10 @@ class Calibration:
         The iterative (for intrinsics) pipeline we've been using so far.
         """
 
-        self.set_origin(origin)
+        self.img_points1 = img_points1
+        self.img_points2 = img_points2
+        self.obj_points = obj_points
+        self.origin = origin
 
         # undistort calibration points
         img_points1 = lib.undistort_image_points(img_points1, self.imtx1, self.idist1)
@@ -106,7 +109,10 @@ class Calibration:
         Same thing but only using the initial intrinsics #2.
         """
 
-        self.set_origin(origin)
+        self.img_points1 = img_points1
+        self.img_points2 = img_points2
+        self.obj_points = obj_points
+        self.origin = origin
 
         # undistort calibration points
         img_points1 = lib.undistort_image_points(img_points1, self.imtx2, self.idist2)
@@ -140,7 +146,10 @@ class Calibration:
         What if we just do single calibrations with no guesses?
         """
 
-        self.set_origin(origin)
+        self.img_points1 = img_points1
+        self.img_points2 = img_points2
+        self.obj_points = obj_points
+        self.origin = origin
 
         rmse1, mtx1, dist1, rvecs1, tvecs1 = cv.calibrateCamera(obj_points,
                                             img_points1, (WF, HF), None, None)
@@ -166,5 +175,8 @@ class Calibration:
         """
         TODO: use cv.stereoCalibrate()
         """
-        pass
+        self.img_points1 = img_points1
+        self.img_points2 = img_points2
+        self.obj_points = obj_points
+        self.origin = origin
 
