@@ -106,7 +106,14 @@ class Calibration:
     def calibrate2(self, img_points1, img_points2, obj_points, origin):
 
         """
-        Same thing but only using the initial intrinsics #2.
+        Same thing but only using one set of initial intrinsics
+        Result: RMSE of the contralateral camera changes slightly.
+        ----
+        RMSE:  4.118207096168145 2.1944965308611013
+        RMSE:  4.113882665343289 2.1944965308611013
+        ----
+        RMSE:  4.118207096168145 2.1944965308611013
+        RMSE:  4.118207096168145 2.4461557227032165
         """
 
         self.img_points1 = img_points1
@@ -115,16 +122,16 @@ class Calibration:
         self.origin = origin
 
         # undistort calibration points
-        img_points1 = lib.undistort_image_points(img_points1, self.imtx2, self.idist2)
-        img_points2 = lib.undistort_image_points(img_points2, self.imtx2, self.idist2)
+        img_points1 = lib.undistort_image_points(img_points1, self.imtx1, self.idist1)
+        img_points2 = lib.undistort_image_points(img_points2, self.imtx1, self.idist1)
 
         # calibrate each camera against these points
         my_flags = cv.CALIB_USE_INTRINSIC_GUESS + cv.CALIB_FIX_PRINCIPAL_POINT
         rmse1, mtx1, dist1, rvecs1, tvecs1 = cv.calibrateCamera(obj_points, img_points1,
-                                                                        (WF, HF), self.imtx2, self.idist2,
+                                                                        (WF, HF), self.imtx1, self.idist1,
                                                                         flags=my_flags)
         rmse2, mtx2, dist2, rvecs2, tvecs2 = cv.calibrateCamera(obj_points, img_points2,
-                                                                        (WF, HF), self.imtx2, self.idist2,
+                                                                        (WF, HF), self.imtx1, self.idist1,
                                                                         flags=my_flags)
 
         # calculate projection matrices
@@ -144,6 +151,9 @@ class Calibration:
 
         """
         What if we just do single calibrations with no guesses?
+        Result: doesn't work, because "For non-planar calibration rigs the
+        initial intrinsic matrix must be specified in function
+        'cvCalibrateCamera2Internal'"
         """
 
         self.img_points1 = img_points1
@@ -174,9 +184,48 @@ class Calibration:
 
         """
         TODO: use cv.stereoCalibrate()
+        i.e. temuge method
         """
         self.img_points1 = img_points1
         self.img_points2 = img_points2
         self.obj_points = obj_points
         self.origin = origin
+
+    def calibrate5(self, img_points1, img_points2, obj_points, origin):
+
+        """
+        Our OG algorithm but without undistortion.
+        Result: almost the same, just very slightly worse.
+        """
+
+        self.img_points1 = img_points1
+        self.img_points2 = img_points2
+        self.obj_points = obj_points
+        self.origin = origin
+
+        # undistort calibration points
+        #img_points1 = lib.undistort_image_points(img_points1, self.imtx1, self.idist1)
+        #img_points2 = lib.undistort_image_points(img_points2, self.imtx2, self.idist2)
+
+        # calibrate each camera against these points
+        my_flags = cv.CALIB_USE_INTRINSIC_GUESS + cv.CALIB_FIX_PRINCIPAL_POINT
+        rmse1, mtx1, dist1, rvecs1, tvecs1 = cv.calibrateCamera(obj_points, img_points1,
+                                                                        (WF, HF), self.imtx1, self.idist1,
+                                                                        flags=my_flags)
+        rmse2, mtx2, dist2, rvecs2, tvecs2 = cv.calibrateCamera(obj_points, img_points2,
+                                                                        (WF, HF), self.imtx2, self.idist2,
+                                                                        flags=my_flags)
+
+        # calculate projection matrices
+        proj1 = lib.get_projection_matrix(mtx1, rvecs1[0], tvecs1[0])
+        proj2 = lib.get_projection_matrix(mtx2, rvecs2[0], tvecs2[0])
+
+        self.mtx1 = mtx1
+        self.mtx2 = mtx2
+        self.dist1 = dist1
+        self.dist2 = dist2
+        self.proj1 = proj1
+        self.proj2 = proj2
+        self.rmse1 = rmse1
+        self.rmse2 = rmse2
 
