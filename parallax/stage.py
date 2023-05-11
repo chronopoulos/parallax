@@ -94,6 +94,13 @@ class Stage:
             time.sleep(TIME_SLEEP)
         return cmd.result()
 
+    def get_1d_done(self, axis):
+        cmd = io.Check1dDoneCommand(self.device, axis)
+        self.worker.queue_command(cmd)
+        while not cmd.done():
+            time.sleep(TIME_SLEEP)
+        return cmd.result()
+
     def get_speed(self):
         cmd = io.GetSpeedCommand(self.device)
         self.worker.queue_command(cmd)
@@ -122,7 +129,7 @@ class Stage:
         cmd = io.MoveRelative3dCommand(self.device, (dx,dy,dz))
         self.worker.queue_command(cmd)
 
-    def move_relative_1d(self, axis, distance):
+    def move_relative_1d(self, axis, distance, blocking=False):
         if axis == 'z':
             distance = (-1) * distance
         cmd = io.MoveRelative1dCommand(self.device, axis, distance)

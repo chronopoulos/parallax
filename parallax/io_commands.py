@@ -111,6 +111,23 @@ class GetPositionCommand(IOCommand):
         return self._done
 
 
+class Check1dDoneCommand(IOCommand):
+
+    def __init__(self, device, axis):
+        IOCommand.__init__(self, device)
+        self.axis = axis
+        self.blocking = True
+        self.fast = True
+        self._done = False
+
+    def execute(self):
+        self._result = self.device.axes_on_target(self.axis)
+        self._done = True
+
+    def done(self):
+        return self._done
+
+
 class GetSpeedCommand(IOCommand):
 
     def __init__(self, device):

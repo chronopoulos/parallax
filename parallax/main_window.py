@@ -23,6 +23,7 @@ from .accuracy_test import AccuracyTestTool
 from .ground_truth_data_tool import GroundTruthDataTool
 from .elevator_control import ElevatorControlTool
 from .point_bank import PointBank
+from .clpd import ClosedLoopProbeDetector
 
 
 class MainWindow(QMainWindow):
@@ -61,6 +62,8 @@ class MainWindow(QMainWindow):
         self.elevator_action.triggered.connect(self.launch_elevator)
         self.pb_action = QAction("Point Bank")
         self.pb_action.triggered.connect(self.launch_pb)
+        self.clpd_action = QAction("Closed-loop probe detector")
+        self.clpd_action.triggered.connect(self.launch_clpd)
         self.console_action = QAction("Python Console")
         self.console_action.triggered.connect(self.show_console)
         self.about_action = QAction("About")
@@ -88,6 +91,7 @@ class MainWindow(QMainWindow):
         self.tools_menu.addAction(self.elevator_action)
         self.tools_menu.addAction(self.pb_action)
         self.tools_menu.addAction(self.console_action)
+        self.tools_menu.addAction(self.clpd_action)
 
         self.help_menu = self.menuBar().addMenu("Help")
         self.help_menu.addAction(self.about_action)
@@ -142,6 +146,11 @@ class MainWindow(QMainWindow):
         self.pb = PointBank()
         self.pb.msg_posted.connect(self.widget.msg_log.post)
         self.pb.show()
+
+    def launch_clpd(self):
+        self.clpd = ClosedLoopProbeDetector(self.model, self.screens())
+        self.clpd.show()
+        self.clpd.msg_posted.connect(self.widget.msg_log.post)
 
     def screens(self):
         return self.widget.lscreen, self.widget.rscreen
