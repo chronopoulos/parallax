@@ -148,7 +148,7 @@ class ScreenWidget(pg.GraphicsView):
         self.filter.launch_control_panel()
 
     def set_detector(self, detector):
-        self.detector = detector()
+        self.detector = detector(self)
         self.detector.launch_control_panel()
 
     def get_selected(self):

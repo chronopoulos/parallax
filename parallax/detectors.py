@@ -62,6 +62,70 @@ class RandomWalkDetector:
         self.control_panel.show()
 
 
+class TrackerTLDDetector:
+
+    name = 'OpenCV TrackerTLD'
+
+    def __init__(self, screen_widget):
+        self.pos = (0,0)
+        self.step = 5
+        self.screen = screen_widget
+
+        self.tracker = cv2.TrackerTLD_create()
+
+        frame = self.screen.camera.get_last_image_data()
+        x,y = self.screen.get_selected()
+        if x and y:
+            bbox_init = (x-50,y-50, 50,50)    # x,y,w,h
+            ok = self.tracker.init(frame, bbox_init)
+            self.initialized = True
+        self.initialized = False
+
+    def process(self, frame):
+        ok, bbox = self.tracker.update(frame)
+        if ok:
+            x,y = bbox[:2]
+            print('bbox = ', bbox)
+        else:
+            print('tracking failed')
+            x,y = 0,0
+        return x,y
+
+    def launch_control_panel(self):
+        pass
+
+
+class TrackerKCFDetector:
+
+    name = 'OpenCV TrackerKCF'
+
+    def __init__(self, screen_widget):
+        self.screen = screen_widget
+
+        self.tracker = cv2.TrackerKCF_create()
+
+        frame = self.screen.camera.get_last_image_data()
+        x,y = self.screen.get_selected()
+        if x and y:
+            bbox_init = (x-50,y-50, 50,50)    # x,y,w,h
+            ok = self.tracker.init(frame, bbox_init)
+            self.initialized = True
+        self.initialized = False
+
+    def process(self, frame):
+        ok, bbox = self.tracker.update(frame)
+        if ok:
+            x,y = bbox[:2]
+            print('bbox = ', bbox)
+        else:
+            print('tracking failed')
+            x,y = 0,0
+        return x,y
+
+    def launch_control_panel(self):
+        pass
+
+
 def template_match(img, template, method):
     res = cv2.matchTemplate(img, template, method)
     if method == cv2.TM_SQDIFF_NORMED:
