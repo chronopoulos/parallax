@@ -10,7 +10,6 @@ import logging
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--dummy', action='store_true', help='dummy mode')
 args = parser.parse_args()
-print(args.dummy)
 
 # set up logging to file
 logger = logging.getLogger()
