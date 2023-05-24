@@ -9,6 +9,7 @@ import importlib
 
 from . import filters
 from . import detectors
+from . import trackers
 
 
 class ScreenWidget(pg.GraphicsView):
@@ -29,7 +30,8 @@ class ScreenWidget(pg.GraphicsView):
         self.image_item = ClickableImage()
         self.image_item.axisOrder = 'row-major'
         self.view_box.addItem(self.image_item)
-        self.image_item.mouse_clicked.connect(self.image_clicked)
+        self.image_item.mouse_clicked.connect(self.handle_click)
+        self.image_item.mouse_double_clicked.connect(self.handle_double_click)
 
         self.click_target = pg.TargetItem()
         self.view_box.addItem(self.click_target)
@@ -39,6 +41,7 @@ class ScreenWidget(pg.GraphicsView):
         self.focochan_actions = []
         self.filter_actions = []
         self.detector_actions = []
+        self.tracker_actions = []  # necessary?
 
         # still needed?
         self.camera_action_separator = self.view_box.menu.insertSeparator(self.view_box.menu.actions()[0])
@@ -49,6 +52,14 @@ class ScreenWidget(pg.GraphicsView):
         self.focochan = None
         self.filter = filters.NoFilter()
         self.detector = detectors.NoDetector()
+        self.tracker = None
+
+        # initialize ROI, set invisible
+        self.roi = pg.ROI((0,0), size=(100,100))
+        self.roi.addScaleHandle((1,1), (0,0))
+        self.roi.addScaleHandle((0,1), (1,0))
+        self.view_box.addItem(self.roi)
+        self.roi.setVisible(False)
 
         # sub-menus
         self.parallax_menu = QMenu("Parallax", self.view_box.menu)
@@ -56,12 +67,14 @@ class ScreenWidget(pg.GraphicsView):
         self.focochan_menu = self.parallax_menu.addMenu("Focus Controllers")
         self.filter_menu = self.parallax_menu.addMenu("Filters")
         self.detector_menu = self.parallax_menu.addMenu("Detectors")
+        self.tracker_menu = self.parallax_menu.addMenu("Trackers")
         self.view_box.menu.insertMenu(self.view_box.menu.actions()[0], self.parallax_menu)
 
         self.update_camera_menu()
         self.update_focus_control_menu()
         self.update_filter_menu()
         self.update_detector_menu()
+        self.update_tracker_menu()
 
         if self.filename:
             self.set_data(cv2.imread(filename, cv2.IMREAD_GRAYSCALE))
@@ -78,6 +91,8 @@ class ScreenWidget(pg.GraphicsView):
     def set_data(self, data):
         data = self.filter.process(data)
         pos = self.detector.process(data)
+        if self.tracker is not None:
+            self.tracker.process()
         if pos is not None:
             self.select(pos)
         self.image_item.setImage(data, autoLevels=False)
@@ -122,11 +137,25 @@ class ScreenWidget(pg.GraphicsView):
                 act.triggered.connect(act.callback)
                 self.detector_actions.append(act)
 
-    def image_clicked(self, event):
+    def update_tracker_menu(self):
+        for act in self.tracker_actions:
+            self.tracker_menu.removeAction(act)
+        for name, obj in inspect.getmembers(trackers):
+            if inspect.isclass(obj) and (obj.__module__ == 'parallax.trackers'):
+                act = self.tracker_menu.addAction(obj.name)
+                act.callback = functools.partial(self.launch_tracker, obj)
+                act.triggered.connect(act.callback)
+                self.tracker_actions.append(act)
+
+    def handle_click(self, event):
         if event.button() == QtCore.Qt.MouseButton.LeftButton:            
             self.select(event.pos())
         elif event.button() == QtCore.Qt.MouseButton.MiddleButton:            
             self.zoom_out()
+
+    def handle_double_click(self, event):
+        pos = event.pos()
+        self.set_roi((pos.x()-50,pos.y()-50), (100,100))
 
     def select(self, pos):
         self.click_target.setPos(pos)
@@ -151,12 +180,26 @@ class ScreenWidget(pg.GraphicsView):
         self.detector = detector(self)
         self.detector.launch_control_panel()
 
+    def launch_tracker(self, tracker):
+        self.tracker = tracker(self.model, self)
+        self.tracker.tracked.connect(self.select)
+        self.tracker.show()
+
     def get_selected(self):
         if self.click_target.isVisible():
             pos = self.click_target.pos()
             return pos.x(), pos.y()
         else:
             return None, None
+
+    def set_roi(self, pos, size):
+        self.roi.setPos(pos)
+        self.roi.setSize(size)
+        self.roi.setVisible(True)
+
+    def get_roi(self):
+        if self.roi is not None:
+            return self.roi.pos(), self.roi.size(), self.roi.angle()
 
     def wheelEvent(self, e):
         forward = bool(e.angleDelta().y() > 0)
@@ -173,6 +216,13 @@ class ScreenWidget(pg.GraphicsView):
 
 class ClickableImage(pg.ImageItem):
     mouse_clicked = pyqtSignal(object)    
+    mouse_double_clicked = pyqtSignal(object)    
+
     def mouseClickEvent(self, ev):
         super().mouseClickEvent(ev)
         self.mouse_clicked.emit(ev)
+
+    def mouseDoubleClickEvent(self, ev):
+        super().mouseDoubleClickEvent(ev)
+        self.mouse_double_clicked.emit(ev)
+

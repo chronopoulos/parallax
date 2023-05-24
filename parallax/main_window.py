@@ -5,6 +5,8 @@ from PyQt5.QtGui import QIcon
 import pyqtgraph.console
 import numpy as np
 import os
+import inspect
+import functools
 
 from . import get_image_file, data_dir
 from .message_log import MessageLog
