@@ -6,7 +6,7 @@ import os
 
 from PyQt5.QtWidgets import QWidget, QLabel, QSlider, QPushButton
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QFileDialog
-from PyQt5.QtWidgets import QComboBox, QSpinBox
+from PyQt5.QtWidgets import QComboBox, QSpinBox, QSpacerItem
 from PyQt5.QtCore import pyqtSignal, Qt, QThread, QObject
 from PyQt5.QtGui import QIcon
 
@@ -127,6 +127,7 @@ class OpenCVTracker(QWidget):
         self.roi_screen = ScreenWidget(model=self.model) # don't need the model?
 
         self.algo_label = QLabel('Algorithm:')
+        self.algo_label.setAlignment(Qt.AlignCenter)
         self.algo_drop = QComboBox()
         for k in self.algos.keys():
             self.algo_drop.addItem(k)
@@ -134,21 +135,17 @@ class OpenCVTracker(QWidget):
         self.init_button = QPushButton('Initialize')
         self.init_button.clicked.connect(self.initialize)
         
-        self.refresh_button = QPushButton('Refresh Frame')
-        self.refresh_button.clicked.connect(self.refresh_frame)
-
         self.status_label = QLabel('Status: Not Initialized')
         self.status_label.setAlignment(Qt.AlignCenter)
         self.status_label.setFont(FONT_BOLD)
         
         layout = QGridLayout()
-        layout.addWidget(self.instruction_label, 0,0,1,2)
-        layout.addWidget(self.roi_screen, 1,0,6,2)
+        layout.addWidget(self.instruction_label, 0,0,1,4)
+        layout.addWidget(self.roi_screen, 1,0,6,4)
         layout.addWidget(self.algo_label, 7,0,1,1)
         layout.addWidget(self.algo_drop, 7,1,1,1)
-        layout.addWidget(self.init_button, 8,0,1,1)
-        layout.addWidget(self.refresh_button, 8,1,1,1)
-        layout.addWidget(self.status_label, 9,0,1,2)
+        layout.addWidget(self.init_button, 7,2,1,1)
+        layout.addWidget(self.status_label, 8,0,1,4)
         self.setLayout(layout)
 
         self.setWindowTitle('OpenCV Tracker Control')
