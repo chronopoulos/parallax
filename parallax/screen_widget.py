@@ -92,7 +92,7 @@ class ScreenWidget(pg.GraphicsView):
         data = self.filter.process(data)
         pos = self.detector.process(data)
         if self.tracker is not None:
-            self.tracker.process()
+            self.tracker.process(data)
         if pos is not None:
             self.select(pos)
         self.image_item.setImage(data, autoLevels=False)
@@ -181,9 +181,14 @@ class ScreenWidget(pg.GraphicsView):
         self.detector.launch_control_panel()
 
     def launch_tracker(self, tracker):
-        self.tracker = tracker(self.model, self)
-        self.tracker.tracked.connect(self.select)
-        self.tracker.show()
+        if isinstance(self.tracker, tracker):
+            self.tracker.show()
+        else:
+            if self.tracker is not None:
+                self.tracker.clean()
+            self.tracker = tracker(self.model, self)
+            self.tracker.tracked.connect(self.select)
+            self.tracker.show()
 
     def get_selected(self):
         if self.click_target.isVisible():

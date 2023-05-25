@@ -7,7 +7,7 @@ from PyQt5.QtCore import pyqtSignal, Qt
 
 class NoFilter:
 
-    name = "None"
+    name = 'None'
 
     def __init__(self):
         pass
