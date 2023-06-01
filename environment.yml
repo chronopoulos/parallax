@@ -1,8 +1,10 @@
-name: parallax
+name: parallax-sleap
 
 channels:
   - conda-forge
   - defaults
+  - sleap
+  - nvidia
 
 dependencies:
   - git
@@ -11,6 +13,7 @@ dependencies:
   - pip
   - scipy
   - pyserial
+  - sleap=1.3.0
   - pip:
     - pyqtgraph
     - opencv-python-headless
