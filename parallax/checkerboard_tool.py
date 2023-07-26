@@ -10,6 +10,8 @@ import datetime
 import os
 import pickle
 
+
+from .helper import uid8
 from . import get_image_file, data_dir
 from .screen_widget import ScreenWidget
 from .filters import CheckerboardFilter
@@ -39,6 +41,9 @@ class CheckerboardToolMono(QWidget):
         self.save_corners_button.clicked.connect(self.save_corners)
         self.load_corners_button = QPushButton('Load Corners')
         self.load_corners_button.clicked.connect(self.load_corners)
+        self.collect_button = QPushButton('collect 50 frames')
+        self.collect_button.clicked.connect(self.collect_frames)
+        self.icollect = 0
 
         self.screens_layout = QHBoxLayout()
         self.screens_layout.addWidget(self.lscreen)
@@ -48,6 +53,7 @@ class CheckerboardToolMono(QWidget):
         self.layout.addWidget(self.grab_button)
         self.layout.addWidget(self.save_corners_button)
         self.layout.addWidget(self.load_corners_button)
+        self.layout.addWidget(self.collect_button)
         self.setLayout(self.layout)
 
         self.setWindowTitle('Checkerboard Tool (Mono)')
@@ -61,6 +67,21 @@ class CheckerboardToolMono(QWidget):
         self.ipts = [] # left image points
 
         self.last_cal = None
+
+    def collect_frames(self):
+        
+        self.collect_timer = QTimer()
+        self.collect_timer.timeout.connect(self.handle_collect_timer)
+        self.collect_timer.start(2000)
+
+    def handle_collect_timer(self):
+        if self.icollect < 50:
+            frame = self.lscreen.camera.get_last_image_data()
+            tag = uid8()
+            self.model.save_training_data((0,0), frame, tag)
+        else:
+            print('collection done')
+        
 
     def grab_corners(self):
         lfilter = self.lscreen.filter
