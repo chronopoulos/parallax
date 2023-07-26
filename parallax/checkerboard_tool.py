@@ -79,6 +79,7 @@ class CheckerboardToolMono(QWidget):
             frame = self.lscreen.camera.get_last_image_data()
             tag = uid8()
             self.model.save_training_data((0,0), frame, tag)
+            self.icollect += 1
         else:
             print('collection done')
         
