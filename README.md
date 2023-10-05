@@ -2,7 +2,7 @@
 
 ## GUI software for photogrammetry-assisted probe targeting in electrophysiology
 
-![Parallax Screenshot](https://aind.tech/docs/parallax_screenshot_20230216.PNG)
+![probeTracking](https://github.com/chronopoulos/parallax/assets/1569715/6f86fad8-c737-4059-a16c-0738c0706507)
 
 ### Installation via `conda`
 
